@@ -26,4 +26,6 @@ Year-over-year uses the same month one year earlier.
 Volatility = sample standard deviation of 12 consecutive monthly percentage changes; percentage points, not annualized.
 Full-history lookbacks precede filtering. Missing months remain gaps; no interpolation. Indices are not quotes or local installed costs. Data may be revised.
 
-Apache ECharts 5.6.0 is bundled under Apache License 2.0. See included LICENSE and NOTICE. All AI features and provider integrations have been removed.
+Apache ECharts 5.6.0 is bundled under Apache License 2.0. See included LICENSE and NOTICE.
+
+See README.md for the full project description, Build purchasing brief AI design, human/AI development process, verification details and future improvements.
