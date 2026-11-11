@@ -13,3 +13,6 @@ Connect Gemini, GitHub Models (token with models:read), or Groq using a session 
 Formulas and cleaning details are available in the Data & methodology dialog. Not seasonally adjusted; 1982=100. Index levels do not measure local installed cost. Missing months are gaps, no interpolation. Volatility uses sample standard deviation of 12 consecutive monthly returns, in percentage points, not annualized.
 
 Sources: https://fred.stlouisfed.org/series/WPU08, https://fred.stlouisfed.org/series/WPU101, https://fred.stlouisfed.org/series/WPU133.
+
+Range workspaces: each material has independent closable views with dates, chart selection and zoom. New view copies the active view. Above ten tabs the strip scrolls horizontally; smaller screens scroll earlier. Arrow buttons, keyboard Left/Right/Home/End and Delete are supported. Close chooses the nearest remaining view; closing the last creates a default. Undo close restores the most recently closed view. View settings persist in localStorage; clearing browser site data clears them. API keys and chats are never persisted. Exports now prepare explicit individual PNG download links, with errors displayed inside the export dialog. Invalid ranges hide stale charts and disable exporting.
+
