@@ -1,26 +1,12 @@
 # Material Desk
 
-Material Desk is a construction-material price dashboard for estimators, quantity surveyors and purchasing teams. It puts long-term trends, recent changes and price variability in one place, with separate date-range views for different questions.
+A construction material price tracker for estimators and purchasing teams. It charts three producer price indexes from FRED (lumber and wood, iron and steel, concrete products), shows month-over-month change, year-over-year change and rolling 12-month volatility for any date range, and turns the selected history into a purchasing brief with an LLM.
 
 ## How to run it
 
-### Portable version - no installation
+**Portable, no installation.** Open `portable/Material Desk.html` in a current browser (Edge, Chrome, Firefox, Safari). The file contains the chart library, styles and all three data series, so the charts work offline. The AI feature needs internet access and your own free Gemini API key.
 
-1. Extract **Material-Desk-Portable.zip** to a folder.
-2. Double-click **Material Desk.html** to open it in a modern browser such as Edge, Chrome or Firefox.
-3. Choose a material, date range and chart view.
-
-No account, API key, Node.js, Python, package installation, web server or internet connection is required for the charts. **Build purchasing brief** is optional: it requires internet access and your own Google Gemini API key. The HTML contains the chart library, styles and all three data series. Fonts come from the device's built-in system fonts. You can share the HTML file on its own.
-
-The ZIP also contains the raw CSVs, these instructions and the ECharts license. Editing a CSV in the ZIP does not alter the embedded dashboard: use **Import FRED CSV** instead.
-
-### Hosted version
-
-Open https://material-desk-prices-ynov10.brawny-badge-0979.chatgpt.site/ in a browser. Access depends on the site's sharing settings; the current site is private and may require ChatGPT sign-in.
-
-### Developer version
-
-From the source project folder, with Node.js installed:
+**Developer.** With Node.js 20 or later installed, from the project folder:
 
 ```sh
 node build.mjs
@@ -28,24 +14,19 @@ npm test
 npm run dev
 ```
 
-Open http://127.0.0.1:4174 for the optional development preview. There are no npm packages to install. The build assembles `dist/index.html` for static hosting and `portable/Material Desk.html` for distribution. Recipients of the ZIP do not need these developer commands.
+The build assembles `dist/index.html` and `portable/Material Desk.html` from the sources. The test suite runs on Node's built-in runner. `npm run dev` serves the built page at http://127.0.0.1:4174. There are no npm packages to install.
 
-## What was built
+## What I built
 
-- Material navigation for lumber and wood products, iron and steel, and concrete products.
-- Clickable start/end month calendars with a year selector and a 12-month grid, 1-year/5-year/10-year/full-history presets, and four chart views per material.
-- Multiple closable date-range tabs, each keeping its own dates, chart selection and zoom. New view copies the active view. Above ten tabs, the strip scrolls horizontally; smaller screens scroll earlier. Undo close restores the most recently closed view. Closing the last view opens a default view.
-- Pointer/pinch zoom, drag-to-pan and a range slider. Use **Reset zoom** in the toolbar to return to the selected dates. The chart's box-zoom buttons are omitted to simplify interaction.
-- Individual or multi-chart PNG preparation with width, resolution and background settings, followed by explicit download links.
-- Local CSV import and **Save portable HTML**, which creates a shareable single-file copy containing the currently loaded data.
-- Optional online **Build purchasing brief** with a session-only Gemini API key, project details, source-backed context, follow-up questions and text download.
-- Larger system fonts, higher-contrast chart labels, restrained gray surfaces and clear section boundaries.
+- **Three materials, four views each.** Price index line, month-over-month columns, year-over-year line, and rolling 12-month volatility area. Each view can be shown alone or all four in a grid.
+- **Date range picker.** Start and end month calendars plus 1-year, 5-year, 10-year and full-history presets. Changing the range updates every chart and the headline cards at once.
+- **Headline cards for the latest month in the range** (index, month-over-month, year-over-year, 12-month volatility) and a summary line for the whole selection (start-to-end change, high, low, range volatility).
+- **Multiple date-range views per material.** Each tab keeps its own dates, chart choice and zoom. Views are saved in the browser.
+- **Data refresh without a server.** Import a freshly downloaded FRED CSV; the header identifies the material. Save a portable HTML copy that embeds the updated data.
+- **PNG export** of any chart at chosen width, resolution and background.
+- **Build purchasing brief**, the AI feature, described below.
 
-Focused range tabs support Left/Right arrows, Home/End and Delete. Active selections have visible states, date errors appear beside the controls, invalid ranges hide stale charts, and export errors remain inside the export dialog.
-
-## Data and chart choices
-
-The data comes from the US Bureau of Labor Statistics through FRED:
+## Data and metrics
 
 | Material | Series | Source |
 | --- | --- | --- |
@@ -53,87 +34,76 @@ The data comes from the US Bureau of Labor Statistics through FRED:
 | Iron and steel | WPU101 | https://fred.stlouisfed.org/series/WPU101 |
 | Concrete products | WPU133 | https://fred.stlouisfed.org/series/WPU133 |
 
-The included snapshot was downloaded November 10, 2026 (America/Chicago), and runs through September 2026. These are monthly, not seasonally adjusted indices with 1982 = 100. They measure broad producer prices, not local supplier quotes or installed construction costs. Published observations may be revised.
+The bundled snapshot was downloaded on November 10, 2026 and runs from January 1926 through September 2026. The series are monthly, not seasonally adjusted, indexed to 1982 = 100. They describe national producer prices, not a local quote or an installed cost.
 
-| View | Calculation | Why this chart |
-| --- | --- | --- |
-| Price index | Published index | A line makes long-term direction and turning points easy to follow. |
-| Monthly change | 100 x (current / previous calendar month - 1) | Diverging columns show each month's direction and magnitude around zero. |
-| Yearly change | 100 x (current / same month last year - 1) | A line around zero highlights periods of inflation and deflation. |
-| Volatility | Sample standard deviation of 12 consecutive monthly percentage changes | An area chart highlights changing levels of variability. Units are percentage points; it is not annualized. |
+**Cleaning.** FRED marks missing values with a period. Those rows, along with non-numeric, non-positive or malformed-date rows, are dropped and counted. Duplicate months keep the last valid value. Missing months stay as gaps in the charts; nothing is interpolated.
 
-Cleaning sorts observations by month, rejects missing/nonnumeric/nonpositive values and invalid date formats, and resolves duplicate months with the last valid observation. Missing months remain gaps; there is no interpolation. Exact calendar lags prevent a missing month from being treated as the previous month. Calculations run over the full history before date filtering, retaining the lookback at the left edge. Incomplete rolling volatility windows remain blank.
+| Metric | Definition |
+| --- | --- |
+| Month-over-month | 100 × (index ÷ index one calendar month earlier − 1) |
+| Year-over-year | 100 × (index ÷ index twelve calendar months earlier − 1) |
+| Rolling 12-month volatility | Sample standard deviation of the trailing 12 monthly percent changes, in percentage points. Not annualized. Blank until 12 consecutive changes exist. |
 
-## Updating data and sharing work
+Lookups are by exact calendar month, so a gap never shifts the comparison. All three metrics are computed on the full history before the date range is applied, which means the first month of any selection already has its year-ago value and its 12-month window.
 
-While online, open **Import FRED CSV** and follow the download links. Select one or more CSV files. Headers identify the material automatically; all selected files are validated before applying the update. Nothing is uploaded.
+## The AI feature: Build purchasing brief
 
-Use **Save portable HTML** after importing to distribute the updated snapshot. The dashboard does not fetch live data in the background.
+**Who it is for.** An estimator or buyer at a contractor who has to commit to a material price months before the material is bought. The charts tell them what prices did. They still have to decide what to ask the supplier, whether to take a fixed price or an index-linked one, and how much budget exposure to carry.
 
-View settings and imported CSVs are saved in the current browser when local-file storage is available. Moving or renaming the file, changing browsers or clearing site data can change that storage. Save a portable copy to reliably keep the data. Saved browser imports take precedence when reopening; a new recipient sees the embedded snapshot. Date-tab layouts are local preferences and are not embedded in saved copies.
+**What it does.** The user enters an optional material budget, buy-by date and project notes, then asks for a brief. The app sends Gemini a compact summary of the selected range (latest month, start-to-end change, high and low, range volatility), the most recent 24 months of the four metrics, and budget sensitivity scenarios that the app has already computed. Gemini returns a brief structured as Evidence, Missing information, Supplier questions, Purchasing options, Budget scenarios and Next steps, including fixed-price versus index-linked tradeoffs and, on request, illustrative escalation-clause wording. Follow-up questions refine it. The brief can be downloaded as text.
 
-## AI feature: Build purchasing brief
+**Why this instead of a summary.** A summary restates the chart in prose. A purchasing brief is a document the estimator would otherwise have to write before a supplier meeting, and it depends on things a chart cannot combine: the price history, this project's budget and timing, and the commercial options available. It also makes the model's job narrow and checkable.
 
-**Build purchasing brief** helps a buyer prepare a supplier conversation. A chart shows what prices have done; a buyer also needs to decide what to ask, which assumptions to challenge and how to frame commercial terms.
+**Keeping it honest.**
 
-The feature uses the selected material and date range, precomputed historical measures and source references, together with a material budget, buy-by date and the buyer's question. An LLM turns that context into a practical brief:
+- The budget scenarios are arithmetic done in application code. Four are fixed shocks (−10, −5, +5, +10 percent) and two are taken from the data: a repeat of the latest year-over-year change and a repeat of the selected start-to-end change.
+- The system prompt forbids forecasts, requires every number to come from the data sent, and tells the model to treat project notes as untrusted text.
+- After the reply arrives, the app extracts every figure in it and checks it against the data that was sent. Anything that does not match is listed under the brief with a warning. Years, list numbering and small counts are ignored.
+- The brief ends with a reminder that it is historical context, not a forecast, and that contract wording needs professional review.
 
-- Questions about quote validity, specifications, freight, geography and delivery timing.
-- Fixed-price versus index-linked purchasing tradeoffs, including the risk that a national index differs from a specific quote.
-- Hypothetical budget exposure using predefined changes of -10%, -5%, +5% and +10%. Arithmetic is computed in application code; the LLM explains the assumptions rather than inventing the numbers.
-- Illustrative escalation-clause wording covering the reference month, review frequency, caps, floors and basis risk.
-- Follow-up questions when project constraints are missing, with references to the supplied series and dates.
+**Provider and key.** Gemini only. Requests go straight from the browser to Google's API over HTTPS with the key in a header. The key lives in page memory for the session and is never written to browser storage, saved HTML or the ZIP. The default model ID is `gemini-3.5-flash-lite`; model names change, so if it fails use the model list linked in the dialog and enter one available to your key. The feature was built and tested against mocked responses. I have not yet run it with a live key, so the first live run should be treated as a test.
 
-This was chosen instead of a basic chart summary because a purchasing brief is a concrete artifact an estimator can review and use in a supplier meeting. It connects historical evidence to a workflow while keeping assumptions visible. The design avoids price forecasts, treats scenarios as hypothetical rather than probabilities, and calls for professional review of contract wording.
+## How I used AI to build it
 
-### Using the online AI feature
+I used ChatGPT as the coding assistant for the build, and Claude Code as an independent reviewer at the end. I defined the problem, chose the FRED series, set the requirements and the look, and directed every revision. The assistant wrote the code, the tests and the first draft of the documentation.
 
-1. Open **Build purchasing brief** in the header. Charts can stay open offline; this button opens the optional online form.
-2. Get a Gemini API key from https://aistudio.google.com/apikey and paste it into the password field. The portable edition supports **Google Gemini** directly; GitHub and Groq tokens are not supported by this form.
-3. Keep the default model (gemini-3.5-flash-lite) or enter a model ID available to your account. Availability, quota, pricing and key restrictions depend on Google; no free tier is guaranteed.
-4. Optionally enter material budget, buy-by date and project details. The active material and date tab provide the chart evidence. Expand **Review data sent to Gemini** to inspect the full selected history and calculated scenarios.
-5. Click **Generate purchasing brief** while online. Read the result, ask a follow-up, or download the brief as plain text.
-6. **Forget key & clear brief** clears the session. Closing the dialog cancels a pending request. Requests time out after 90 seconds. Errors such as missing key, lost connection, invalid model and provider quota do not disable the charts.
+**What it did well.** The data layer was right the first time: it handled FRED's period-as-missing marker, kept gaps instead of filling them, computed volatility on returns rather than index levels, and used exact calendar lookups so a missing month could not shift a comparison. It produced a sensible test suite without being asked for specifics, and it was careful with the API key path (session memory only, header not URL, a test that the saved portable copy never contains it). It also handled packaging the whole app into a single HTML file, which I would not have attempted by hand.
 
-Requests go directly from the browser to Google's Gemini API over HTTPS. There is no application proxy or backend. The key is sent in the x-goog-api-key header; it is never put in a URL, browser storage, saved HTML or the ZIP. Project details, selected historical data and conversation are sent to Google only when Generate is clicked. Generated text is rendered as text, not executable HTML. This is a bring-your-own-key tool: use your own trusted copy and a key you control. Browser extensions and Google's data handling remain outside the application's control.
+**Where I had to step in.**
 
-Keys, project notes, generated briefs and conversations stay in session memory and are excluded from **Save portable HTML**. That function saves the original blank AI form and current chart data. The explicit **Download brief as text** action exports the result separately. Changing project details or chart context starts a fresh conversation context; old results retain their material/date labels.
+- *I was wrong once and it did not push back.* I noticed the headline month-over-month and year-over-year numbers did not change when I switched between the 1-year, 5-year and 10-year presets and asked it to fix the bug. It did what I asked and replaced them with averages over the selection. That was a misdiagnosis on my part: those figures describe the latest month, so they should not move when only the start of the range moves. The averages it produced have no standard meaning. The review caught this and I restored the latest-month figures, keeping a separate summary line for the whole selection.
+- *It over-engineered short ranges.* Selecting fewer than 12 months made it silently redefine year-over-year as an N-month change and relabel the chart buttons. The brief asks for year-over-year, and since the metrics are computed on full history there is no reason a 3-month view cannot show true year-over-year. I had it removed.
+- *It sent too much to the model.* The first version sent every row in the selected range, which for the full history was about 1,200 rows and roughly 37,000 tokens. I had it replaced with a summary plus the last 24 months.
+- *It never checked the model's output.* The prompt asked for cited numbers but nothing verified them. I added the grounding check described above.
+- *Readability.* Its first drafts were written as a handful of lines several thousand characters long. The source is now formatted normally so a reviewer can read it.
 
-The direct browser preflight was checked for a local-file origin. Browser policies, network filters, provider API changes, key restrictions or account access can still prevent requests. If a request fails, use the reported error to check the connection, model and key settings. No installation or hosted application server is needed by the portable copy.
-
-Implementation reference: [Gemini generateContent API](https://ai.google.dev/api/generate-content), [models](https://ai.google.dev/gemini-api/docs/models). Numerical measures and budget scenarios are calculated by application code; the model explains them.
-
-## How a human used AI to build it
-
-The human supplied the problem, selected the three FRED series and specified the chart, date-filter, export and AI requirements. They then steered successive iterations: clearer material navigation, independent closable range tabs, scrolling after ten tabs, gray/charcoal styling, a portable ZIP, and larger readable fonts and simpler chart controls.
-
-The AI coding assistant translated those requests into code, retrieved and inspected the CSV data, implemented cleaning and calculations, selected chart types, built the interface, wrote tests and documentation, packaged the offline HTML and ZIP, and deployed the hosted version. Browser checks informed fixes to stale charts after invalid input, export feedback and tab recovery.
-
-The human's role was to define the use case and direct revisions; the assistant's role was implementation and verification. This account does not imply the human manually wrote every line, checked every observation, or completed a formal accessibility/usability review. Those checks remain valuable before wider use.
-
-## Verification and limitations
-
-Automated checks cover cleaning, exact calendar lookbacks, a known sample standard deviation, independent view state, close/recovery behavior, saved-workspace validation, CSV identification and standalone packaging. They also compile embedded JavaScript and check that saved portable copies retain chart data and the optional AI feature, exclude session credentials and project content, and have no external runtime assets. AI adapter tests cover request context, scenario arithmetic, successful responses, quota/auth/model failures, cancellation and network errors using mocked responses.
-
-Live authenticated generation has not been verified with a valid user API key. Browser checks cover the AI form, missing-key feedback and an invalid-key request, as well as material/range changes, tab overflow, close/undo, invalid dates, chart rendering and PNG generation. ZIP extraction and the HTML checksum were verified. Direct local-file launch could not be exercised in the automated preview browser because it only permits HTTP/HTTPS; the self-contained artifact was checked structurally and through a local HTTP preview. Cross-browser and cross-platform local-file behavior still needs broader manual testing.
+**How I checked its work.** I recomputed month-over-month and year-over-year for the May 2021 lumber spike by hand from the CSV and compared them to the app and to the test values. I compared the bundled CSV tails against a fresh FRED download. I had the known-answer tests reviewed: a series that rises one percent a month must show zero volatility, monthly changes of 1 through 12 must give a sample standard deviation of √13. I exercised the page in a browser for each change: presets, manual ranges, the all-charts grid, invalid ranges, and the brief dialog without a key. The second assistant's review was run twice against the brief and this README was rewritten from its findings.
 
 ## What I would improve with more time
 
-1. Test file-opening, CSV import, PNG downloads, keyboard navigation, touch gestures and screen-reader use across Windows/macOS and current browsers, including browsers that block local-file storage.
-2. Run usability sessions with estimators and quantity surveyors to refine chart labels, date-range workflows and procurement terminology. Check text/background contrast systematically across every interaction state.
-3. Add named workspace export/import so tab layouts and zoom can travel with a data snapshot, rather than depending on one browser's local storage.
-4. Add a data-vintage/revision comparison and a clearer per-series import history so users can distinguish market movement from revised observations.
-5. Evaluate purchasing-brief outputs with representative procurement tasks: source attribution, arithmetic consistency, handling of missing facts and unsupported recommendations. Have a qualified reviewer assess suggested clause language.
-6. Support a wider range of official CSV formats with more descriptive row-level import diagnostics, while preserving atomic updates and explicit missing-data handling.
+1. Run the brief against a live key with a few representative procurement questions and read the output critically, especially the clause wording.
+2. Derive the budget scenarios from a wider set of observed moves (for example the largest 6-month rise and fall in the selection) rather than two.
+3. Test the portable file across browsers and operating systems, including browsers that block local-file storage.
+4. Let users save and load named workspaces so date-range tabs travel with a data snapshot.
+5. Add a data-vintage comparison so revised observations can be told apart from market moves.
+6. Usability sessions with estimators on the labels, the range workflow and the brief's structure.
 
-## Project structure and license
+## Project structure
 
-`index.template.html` provides the page structure. `dist/brief-core.js` builds Gemini requests and `dist/brief-ui.js` manages the optional AI form. `dist/app.js`, `dist/data-utils.js` and `dist/workspace.js` implement the interactions, calculations and view state. The CSS files define the layout and typography. `build.mjs` embeds these assets, the CSV snapshot and vendored Apache ECharts 5.6.0 into a single HTML file.
+```
+index.template.html   page structure
+dist/app.js           dashboard: views, charts, import, export, portable copy
+dist/data-utils.js    CSV parsing, metrics, range summary (pure functions)
+dist/brief-core.js    AI context, Gemini request, reply parsing, grounding check (pure functions)
+dist/brief-ui.js      AI dialog behaviour
+dist/month-picker.js  calendar month picker
+dist/workspace.js     date-range tab state
+dist/portable.js      single-file assembly
+dist/data/            FRED CSV snapshot
+dist/vendor/          Apache ECharts 5.6.0 (Apache-2.0)
+build.mjs             joins the modules into dist/index.html and portable/Material Desk.html
+tests.mjs             data, metrics, workspace and packaging tests
+brief-tests.mjs       AI feature tests with mocked responses
+```
 
-ECharts is distributed under Apache License 2.0. Its LICENSE and NOTICE are included in the portable ZIP. FRED pages identify the BLS source and provide the series attribution.
-
-## Selected range statistics and short selections
-
-The headline index is explicitly the latest selected observation. It can stay the same when 1Y/5Y/10Y have the same end date. The other headline cards now summarize the complete selection: average monthly change, average comparison change and the sample standard deviation of selected monthly changes. The range banner also shows the first-to-last index change, which requires two observations and is not annualized. Each average reports its observation count; incomplete range volatility is blank rather than silently skipping missing months.
-
-For a selection of N inclusive calendar months shorter than 12, the comparison chart automatically becomes an N-month change (index divided by the index N calendar months earlier, minus one). The rolling volatility chart becomes an N-return sample standard deviation. Both labels change explicitly; these values are not called year-over-year or 12-month volatility. One month supports a monthly comparison but no sample volatility, which needs at least two returns. For 12 or more selected months, the standard 12-month comparison and rolling volatility charts are retained. Rolling calculations still use history before the selected start; the range-volatility card uses selected monthly changes only. The AI context includes the adaptive window and selected-range statistics.
+The `dist/*.js` files are ES modules for testing; the build strips their imports and joins them inside one closure so the page runs from `file://` without module loading.
