@@ -1,3 +1,4 @@
+export function identifyCSV(text){const header=text.replace(/^\uFEFF/,'').split(/\r?\n/)[0].split(',').map(s=>s.trim().replace(/^"|"$/g,''));const id=header[1];if(header.length!==2||!['observation_date','DATE','date'].includes(header[0])||!['WPU08','WPU101','WPU133'].includes(id))throw Error('Use a FRED CSV with an observation_date and WPU08, WPU101, or WPU133 column.');if(parseCSV(text).rows.length<13)throw Error(id+': at least 13 valid monthly observations are required.');return id}
 export function parseCSV(text){
  const map=new Map();let dropped=0,duplicates=0;
  for(const line of text.trim().split(/\r?\n/).slice(1)){const [date,raw]=line.split(',');const value=Number(raw);if(!/^\d{4}-(0[1-9]|1[0-2])-01$/.test(date)||!raw?.trim()||!Number.isFinite(value)||value<=0){dropped++;continue}const month=date.slice(0,7);if(map.has(month))duplicates++;map.set(month,{date:month,value});}

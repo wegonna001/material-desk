@@ -1,2 +1,4 @@
-import http from 'node:http';import worker from './dist/server/index.js';
-http.createServer(async(req,res)=>{try{const chunks=[];for await(const chunk of req)chunks.push(chunk);const body=Buffer.concat(chunks);const response=await worker.fetch(new Request('http://127.0.0.1:4173'+req.url,{method:req.method,headers:req.headers,...(body.length?{body}:{} )}));res.writeHead(response.status,Object.fromEntries(response.headers));res.end(Buffer.from(await response.arrayBuffer()))}catch{res.writeHead(500);res.end('Server error')}}).listen(4173,'127.0.0.1',()=>console.log('Local: http://127.0.0.1:4173'));
+// Optional developer preview. Recipients open the HTML file directly.
+import http from 'node:http';import fs from 'node:fs';
+http.createServer((req,res)=>{if(req.url!=='/'&&req.url!=='/index.html'){res.writeHead(404);res.end('Not found');return}res.writeHead(200,{'Content-Type':'text/html; charset=utf-8'});res.end(fs.readFileSync('dist/index.html'))}).listen(4174,'127.0.0.1',()=>console.log('Local: http://127.0.0.1:4174'));
+
