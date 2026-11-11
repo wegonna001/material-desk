@@ -34,3 +34,6 @@ Open Build purchasing brief. Enter your own Google Gemini API key (https://aistu
 The key, project notes and brief are session-only and never included in browser storage, Save portable HTML or the ZIP. Forget key & clear brief clears the session; closing the dialog cancels a pending request. Download brief as text explicitly exports the result. Errors do not disable the charts.
 
 See README.md for the full project description, Build purchasing brief, human/AI development process, verification details and future improvements.
+
+DATE CALENDARS AND RANGE STATISTICS
+Click the From or To month button, select a year, then choose a month from the calendar grid. The latest index follows the end month, while averages, range volatility and start-to-end change summarize the full date selection. Below 12 selected months, the comparison and rolling-volatility charts shorten to that month count and relabel themselves. One month has no sample volatility. The README contains formulas and missing-data rules.

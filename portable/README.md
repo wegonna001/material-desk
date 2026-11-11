@@ -33,7 +33,7 @@ Open http://127.0.0.1:4174 for the optional development preview. There are no np
 ## What was built
 
 - Material navigation for lumber and wood products, iron and steel, and concrete products.
-- Shared start/end month controls, 1-year/5-year/10-year/full-history presets, and four chart views per material.
+- Clickable start/end month calendars with a year selector and a 12-month grid, 1-year/5-year/10-year/full-history presets, and four chart views per material.
 - Multiple closable date-range tabs, each keeping its own dates, chart selection and zoom. New view copies the active view. Above ten tabs, the strip scrolls horizontally; smaller screens scroll earlier. Undo close restores the most recently closed view. Closing the last view opens a default view.
 - Pointer/pinch zoom, drag-to-pan and a range slider. Use **Reset zoom** in the toolbar to return to the selected dates. The chart's box-zoom buttons are omitted to simplify interaction.
 - Individual or multi-chart PNG preparation with width, resolution and background settings, followed by explicit download links.
@@ -62,7 +62,7 @@ The included snapshot was downloaded November 10, 2026 (America/Chicago), and ru
 | Yearly change | 100 x (current / same month last year - 1) | A line around zero highlights periods of inflation and deflation. |
 | Volatility | Sample standard deviation of 12 consecutive monthly percentage changes | An area chart highlights changing levels of variability. Units are percentage points; it is not annualized. |
 
-Cleaning sorts observations by month, rejects missing/nonnumeric/nonpositive values and invalid date formats, and resolves duplicate months with the last valid observation. Missing months remain gaps; there is no interpolation. Exact calendar lags prevent a missing month from being treated as the previous month. Calculations run over the full history before date filtering, retaining the lookback at the left edge. Incomplete volatility windows remain blank.
+Cleaning sorts observations by month, rejects missing/nonnumeric/nonpositive values and invalid date formats, and resolves duplicate months with the last valid observation. Missing months remain gaps; there is no interpolation. Exact calendar lags prevent a missing month from being treated as the previous month. Calculations run over the full history before date filtering, retaining the lookback at the left edge. Incomplete rolling volatility windows remain blank.
 
 ## Updating data and sharing work
 
@@ -131,3 +131,9 @@ Live authenticated generation has not been verified with a valid user API key. B
 `index.template.html` provides the page structure. `dist/brief-core.js` builds Gemini requests and `dist/brief-ui.js` manages the optional AI form. `dist/app.js`, `dist/data-utils.js` and `dist/workspace.js` implement the interactions, calculations and view state. The CSS files define the layout and typography. `build.mjs` embeds these assets, the CSV snapshot and vendored Apache ECharts 5.6.0 into a single HTML file.
 
 ECharts is distributed under Apache License 2.0. Its LICENSE and NOTICE are included in the portable ZIP. FRED pages identify the BLS source and provide the series attribution.
+
+## Selected range statistics and short selections
+
+The headline index is explicitly the latest selected observation. It can stay the same when 1Y/5Y/10Y have the same end date. The other headline cards now summarize the complete selection: average monthly change, average comparison change and the sample standard deviation of selected monthly changes. The range banner also shows the first-to-last index change, which requires two observations and is not annualized. Each average reports its observation count; incomplete range volatility is blank rather than silently skipping missing months.
+
+For a selection of N inclusive calendar months shorter than 12, the comparison chart automatically becomes an N-month change (index divided by the index N calendar months earlier, minus one). The rolling volatility chart becomes an N-return sample standard deviation. Both labels change explicitly; these values are not called year-over-year or 12-month volatility. One month supports a monthly comparison but no sample volatility, which needs at least two returns. For 12 or more selected months, the standard 12-month comparison and rolling volatility charts are retained. Rolling calculations still use history before the selected start; the range-volatility card uses selected monthly changes only. The AI context includes the adaptive window and selected-range statistics.
