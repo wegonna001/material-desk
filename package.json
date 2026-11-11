@@ -1,1 +1,10 @@
-{"name":"material-desk","private":true,"type":"module","scripts":{"build":"node build.mjs","dev":"node serve.mjs","test":"node --test tests.mjs"}}
+{
+  "name": "material-desk",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "dev": "node serve.mjs",
+    "test": "node --test tests.mjs brief-tests.mjs"
+  }
+}
